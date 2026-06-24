@@ -11,6 +11,8 @@ class _BottomSheetPicker<T> {
   ItemBuilder<T>? itemBuilder;
   bool isFullRowItem = false;
   bool isAllowNoSelection = false;
+  bool isConfirmOnTap = false;
+  double? sheetHeight;
   LazyRequestFuture<T>? _lazyRequestFuture;
   Map<String, dynamic>? _parameters = {};
   List<T> _announcedData = <T>[];
@@ -108,6 +110,18 @@ class _BottomSheetPicker<T> {
     return this;
   }
 
+  /// 初始化单选项点击后直接确认
+  _BottomSheetPicker confirmOnTap() {
+    this.isConfirmOnTap = true;
+    return this;
+  }
+
+  /// 初始化 bottom sheet 弹窗高度
+  _BottomSheetPicker height(double value) {
+    this.sheetHeight = value;
+    return this;
+  }
+
   /// 初始化分页懒加载选择器
   _BottomSheetPicker lazyLoad(
       {required LazyRequestFuture<T>? lazyRequestFuture,
@@ -180,6 +194,7 @@ class _BottomSheetPicker<T> {
             themeData: themeData,
             texts: textConfig?.localizations,
             textsBuilder: textConfig?.localizationBuilder,
+            height: sheetHeight,
           );
         } else {
           sheet = BottomSheetPickerContent<T>(
@@ -199,6 +214,8 @@ class _BottomSheetPicker<T> {
             themeData: themeData,
             texts: textConfig?.localizations,
             textsBuilder: textConfig?.localizationBuilder,
+            confirmOnTap: isConfirmOnTap,
+            height: sheetHeight,
           );
         }
         return SizedBox.expand(

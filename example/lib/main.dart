@@ -29,11 +29,13 @@ class _PickerExampleAppState extends State<PickerExampleApp> {
   }
 
   void _applyPickerLocalizations(Locale locale) {
-    BottomSheetPickers.setLocalizations(localizations: BottomPickerLocalizations.byLocale(locale));
+    BottomSheetPickers.setLocalizations(
+        localizations: BottomPickerLocalizations.byLocale(locale));
   }
 
   void _toggleLocale() {
-    final nextLocale = _locale.languageCode == "en" ? const Locale("zh") : const Locale("en");
+    final nextLocale =
+        _locale.languageCode == "en" ? const Locale("zh") : const Locale("en");
     _applyPickerLocalizations(nextLocale);
     setState(() => _locale = nextLocale);
   }
@@ -171,7 +173,8 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
       context,
       title: "Choose tags",
       themeData: _theme,
-    ).options(["New", "Popular", "Recommended", "Archived"], initialValue: ["New"]).show();
+    ).options(["New", "Popular", "Recommended", "Archived"],
+        initialValue: ["New"]).show();
     _updateResult(selected);
   }
 
@@ -180,11 +183,12 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
       context,
       title: "Choose location",
       themeData: _theme,
-    ).options(_locations)
+    )
+        .options(_locations)
         .initialValue(CascadeSelection.byIds("province_a", "city_a", "town_a"))
         .cascadeAllItemSupported()
         .show();
-    if(selected is CascadeSelection) {
+    if (selected is CascadeSelection) {
       _updateResult(selected.path.map((item) => item.label).join(" / "));
     }
   }
@@ -194,11 +198,11 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
       context,
       title: "Choose locations",
       themeData: _theme,
-    ).options(_locations)
-        .multiple()
-        .initialValues([CascadeSelection.byIds("province_a", "city_a", "town_a")])
-        .show();
-    _updateResult(selected?.map((item) => item.path.map((option) => option.label).join(" / ")).join(", "));
+    ).options(_locations).multiple().initialValues(
+        [CascadeSelection.byIds("province_a", "city_a", "town_a")]).show();
+    _updateResult(selected
+        ?.map((item) => item.path.map((option) => option.label).join(" / "))
+        .join(", "));
   }
 
   Future<void> _showLazyPicker() async {
@@ -210,14 +214,17 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
       lazyRequestFuture: (params) async {
         await Future<void>.delayed(const Duration(milliseconds: 300));
         final int pageIndex = params["page_index"] as int? ?? 1;
-        return List<String>.generate(10, (index) => "Item ${(pageIndex - 1) * 10 + index + 1}");
+        return List<String>.generate(
+            10, (index) => "Item ${(pageIndex - 1) * 10 + index + 1}");
       },
     ).show();
     _updateResult(selected);
   }
 
   void _updateResult(Object? value) {
-    if(!mounted) { return ; }
+    if (!mounted) {
+      return;
+    }
     setState(() => _result = value?.toString() ?? "Cancelled");
   }
 }

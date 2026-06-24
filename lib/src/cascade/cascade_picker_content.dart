@@ -15,6 +15,7 @@ class CascadePickerContent extends StatefulWidget {
   final BottomPickerTheme themeData;
   final BottomPickerLocalizations? texts;
   final BottomPickerLocalizationBuilder? textsBuilder;
+  final double? height;
 
   const CascadePickerContent({
     this.title,
@@ -31,6 +32,7 @@ class CascadePickerContent extends StatefulWidget {
     this.themeData = BottomPickerTheme.defaults,
     this.texts,
     this.textsBuilder,
+    this.height,
   });
 
   @override
@@ -904,10 +906,12 @@ class _CascadePickerContentState extends State<CascadePickerContent> {
           top: false,
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight:
-                  mediaQuery.size.height * 0.55 + mediaQuery.padding.bottom,
-              minHeight:
-                  mediaQuery.size.height * 0.45 + mediaQuery.padding.bottom,
+              maxHeight: widget.height != null
+                  ? widget.height! + mediaQuery.padding.bottom
+                  : mediaQuery.size.height * 0.55 + mediaQuery.padding.bottom,
+              minHeight: widget.height != null
+                  ? widget.height! + mediaQuery.padding.bottom
+                  : mediaQuery.size.height * 0.45 + mediaQuery.padding.bottom,
             ),
             child: Column(
               children: [

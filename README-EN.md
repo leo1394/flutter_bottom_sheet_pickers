@@ -75,6 +75,29 @@ final String? selected = await BottomSheetPickers.single<String>(
 ).show();
 ```
 
+### Confirm on Option Tap
+
+```dart
+final String? selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "Choose a fruit",
+).options(
+  ["Apple", "Orange", "Banana"],
+).confirmOnTap()
+    .show();
+```
+
+### Custom Sheet Height
+
+```dart
+final String? selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "Choose a fruit",
+).height(360)
+    .options(["Apple", "Orange", "Banana"])
+    .show();
+```
+
 ### Multiple Picker
 
 ```dart

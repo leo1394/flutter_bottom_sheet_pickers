@@ -1,3 +1,9 @@
+## 0.1.1
+
+- Added Custom Sheet Height
+- Added confirmOnTap for single picker
+
+
 ## 0.1.0
 
 - Initial release.

@@ -86,6 +86,12 @@ class BottomSheetCascadePicker {
     return this;
   }
 
+  /// Sets the bottom sheet content height in logical pixels.
+  BottomSheetCascadePicker height(double value) {
+    _picker.height(value);
+    return this;
+  }
+
   /// Converts this builder to a multiple-selection cascade picker.
   ///
   /// Continue chaining on the returned [BottomSheetCascadeMultiplePicker].

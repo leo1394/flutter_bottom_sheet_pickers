@@ -105,6 +105,12 @@ class BottomSheetMultiplePicker<T> {
     return this;
   }
 
+  /// Sets the bottom sheet content height in logical pixels.
+  BottomSheetMultiplePicker<T> height(double value) {
+    _picker.height(value);
+    return this;
+  }
+
   /// Shows the picker and returns selected values, or null when cancelled.
   Future<List<T>?> show() async {
     final result = await _picker.show();

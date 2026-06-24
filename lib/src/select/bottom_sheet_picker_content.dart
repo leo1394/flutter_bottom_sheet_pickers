@@ -20,6 +20,8 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
   BottomPickerTheme themeData;
   BottomPickerLocalizations? texts;
   BottomPickerLocalizationBuilder? textsBuilder;
+  bool confirmOnTap;
+  double? height;
 
   BottomSheetPickerContent({
     this.title,
@@ -38,6 +40,8 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
     this.themeData = BottomPickerTheme.defaults,
     this.texts,
     this.textsBuilder,
+    this.confirmOnTap = false,
+    this.height,
   });
 
   @override
@@ -139,6 +143,10 @@ class _BottomSheetPickerContentState<T>
                     }
                   }
                 });
+                if (widget.confirmOnTap &&
+                    widget.mode == SelectionMode.SINGLE) {
+                  Navigator.of(context).pop(element);
+                }
               },
               child: Container(
                 margin: EdgeInsets.only(top: index == 0 ? 5 : 0),
@@ -287,10 +295,12 @@ class _BottomSheetPickerContentState<T>
             top: false,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight:
-                    mediaQuery.size.height * 0.68 + mediaQuery.padding.bottom,
-                minHeight:
-                    mediaQuery.size.height * 0.55 + mediaQuery.padding.bottom,
+                maxHeight: widget.height != null
+                    ? widget.height! + mediaQuery.padding.bottom
+                    : mediaQuery.size.height * 0.68 + mediaQuery.padding.bottom,
+                minHeight: widget.height != null
+                    ? widget.height! + mediaQuery.padding.bottom
+                    : mediaQuery.size.height * 0.55 + mediaQuery.padding.bottom,
               ),
               child: Column(
                 children: [
@@ -376,81 +386,82 @@ class _BottomSheetPickerContentState<T>
                       ],
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      12,
-                      16,
-                      mediaQuery.padding.bottom + 10,
-                    ),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(color: Color(0xFFEFF0F6)),
+                  if (!widget.confirmOnTap)
+                    Container(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        12,
+                        16,
+                        mediaQuery.padding.bottom + 10,
+                      ),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: Color(0xFFEFF0F6)),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: widget.themeData.buttonBorderColor,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        widget.themeData.buttonBorderRadius,
+                                  ),
+                                ),
+                                child: Text(
+                                  texts.cancel,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: widget.themeData.buttonBorderColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: ElevatedButton(
+                                onPressed: !_isConfirmEnabled
+                                    ? null
+                                    : () =>
+                                        Navigator.of(context).pop(onConfirm!()),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      widget.themeData.buttonBackgroundColor,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        widget.themeData.buttonBorderRadius,
+                                  ),
+                                  disabledBackgroundColor: widget
+                                      .themeData.disabledButtonBackgroundColor,
+                                  disabledForegroundColor: Colors.white,
+                                  disabledMouseCursor:
+                                      SystemMouseCursors.forbidden,
+                                ),
+                                child: Text(
+                                  texts.confirm,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFFFFFFFF),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 44,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: widget.themeData.buttonBorderColor,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      widget.themeData.buttonBorderRadius,
-                                ),
-                              ),
-                              child: Text(
-                                texts.cancel,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: widget.themeData.buttonBorderColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: SizedBox(
-                            height: 44,
-                            child: ElevatedButton(
-                              onPressed: !_isConfirmEnabled
-                                  ? null
-                                  : () =>
-                                      Navigator.of(context).pop(onConfirm!()),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    widget.themeData.buttonBackgroundColor,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      widget.themeData.buttonBorderRadius,
-                                ),
-                                disabledBackgroundColor: widget
-                                    .themeData.disabledButtonBackgroundColor,
-                                disabledForegroundColor: Colors.white,
-                                disabledMouseCursor:
-                                    SystemMouseCursors.forbidden,
-                              ),
-                              child: Text(
-                                texts.confirm,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xFFFFFFFF),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),

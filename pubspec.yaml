@@ -3,13 +3,13 @@ description: Customizable Flutter bottom sheet pickers for single, multiple, sea
 homepage: https://github.com/leo1394/flutter_bottom_sheet_pickers
 repository: https://github.com/leo1394/flutter_bottom_sheet_pickers
 issue_tracker: https://github.com/leo1394/flutter_bottom_sheet_pickers/issues
-version: 0.1.0
+version: 0.1.1
 
 topics:
   - picker
   - bottom-sheet
   - cascade-picker
-  - flutter-picker
+  - bottom-picker
   - selection
 
 environment:

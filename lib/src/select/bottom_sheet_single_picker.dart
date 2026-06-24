@@ -104,6 +104,21 @@ class BottomSheetSinglePicker<T> {
     return this;
   }
 
+  /// Confirms immediately when an enabled option is tapped.
+  ///
+  /// When enabled, the footer buttons are hidden and tapping an option returns
+  /// that option from [show].
+  BottomSheetSinglePicker<T> confirmOnTap() {
+    _picker.confirmOnTap();
+    return this;
+  }
+
+  /// Sets the bottom sheet content height in logical pixels.
+  BottomSheetSinglePicker<T> height(double value) {
+    _picker.height(value);
+    return this;
+  }
+
   /// Shows the picker and returns the selected value, or null when cancelled.
   Future<T?> show() async {
     final result = await _picker.show();

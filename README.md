@@ -76,6 +76,29 @@ final selected = await BottomSheetPickers.single<String>(
 ).show();
 ```
 
+### 单选点击即确认
+
+```dart
+final selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "选择水果",
+).options(
+  ["Apple", "Orange", "Banana"],
+).confirmOnTap()
+    .show();
+```
+
+### 指定弹窗高度
+
+```dart
+final selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "选择水果",
+).height(360)
+    .options(["Apple", "Orange", "Banana"])
+    .show();
+```
+
 ### 多选
 
 ```dart

@@ -74,6 +74,12 @@ class BottomSheetCascadeMultiplePicker {
     return this;
   }
 
+  /// Sets the bottom sheet content height in logical pixels.
+  BottomSheetCascadeMultiplePicker height(double value) {
+    _picker.height(value);
+    return this;
+  }
+
   /// Shows the picker and returns selected paths, or null when cancelled.
   Future<List<CascadeSelection>?> show() async {
     final result = await _picker.show();

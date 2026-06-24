@@ -13,8 +13,10 @@ void main() {
     expect(themeData.buttonBackgroundColor, const Color(0xFF1677FF));
     expect(themeData.buttonBorderColor, const Color(0xFF1677FF));
     expect(themeData.checkedColor, const Color(0xFF1677FF));
-    expect(themeData.selectedOptionBackgroundColor, const Color(0xFF1677FF).withAlpha((255 * 0.05).round()));
-    expect(themeData.buttonBorderRadius, const BorderRadius.all(Radius.circular(24)));
+    expect(themeData.selectedOptionBackgroundColor,
+        const Color(0xFF1677FF).withAlpha((255 * 0.05).round()));
+    expect(themeData.buttonBorderRadius,
+        const BorderRadius.all(Radius.circular(24)));
   });
 
   test("theme data supports custom button border radius", () {
@@ -23,7 +25,8 @@ void main() {
       buttonBorderRadius: BorderRadius.all(Radius.circular(12)),
     );
 
-    expect(themeData.buttonBorderRadius, const BorderRadius.all(Radius.circular(12)));
+    expect(themeData.buttonBorderRadius,
+        const BorderRadius.all(Radius.circular(12)));
   });
 
   test("cascade selection by ids creates path in order", () {
@@ -40,16 +43,31 @@ void main() {
 
   test("picker texts resolve built-in languages", () {
     expect(BottomPickerLocalizations.byLocale(const Locale("zh")).cancel, "取消");
-    expect(BottomPickerLocalizations.byLocale(const Locale.fromSubtags(languageCode: "zh", scriptCode: "Hant")).confirm, "確認");
-    expect(BottomPickerLocalizations.byLocale(const Locale("en")).cancel, "Cancel");
-    expect(BottomPickerLocalizations.byLocale(const Locale("th")).cancel, "ยกเลิก");
-    expect(BottomPickerLocalizations.byLocale(const Locale("my")).cancel, "ပယ်ဖျက်");
-    expect(BottomPickerLocalizations.byLocale(const Locale("pt", "BR")).confirm, "Confirmar");
-    expect(BottomPickerLocalizations.byLocale(const Locale("fr", "CA")).reset, "Réinit.");
-    expect(BottomPickerLocalizations.byLocale(const Locale("fr", "CA")).searchPlaceholder, "Rechercher");
-    expect(BottomPickerLocalizations.byLocale(const Locale("it")).reset, "Reset");
-    expect(BottomPickerLocalizations.byLocale(const Locale("it")).noMoreData, "Nessun dato in più");
-    expect(BottomPickerLocalizations.byLocale(const Locale("es")).empty, "No hay datos");
+    expect(
+        BottomPickerLocalizations.byLocale(const Locale.fromSubtags(
+                languageCode: "zh", scriptCode: "Hant"))
+            .confirm,
+        "確認");
+    expect(BottomPickerLocalizations.byLocale(const Locale("en")).cancel,
+        "Cancel");
+    expect(BottomPickerLocalizations.byLocale(const Locale("th")).cancel,
+        "ยกเลิก");
+    expect(BottomPickerLocalizations.byLocale(const Locale("my")).cancel,
+        "ပယ်ဖျက်");
+    expect(BottomPickerLocalizations.byLocale(const Locale("pt", "BR")).confirm,
+        "Confirmar");
+    expect(BottomPickerLocalizations.byLocale(const Locale("fr", "CA")).reset,
+        "Réinit.");
+    expect(
+        BottomPickerLocalizations.byLocale(const Locale("fr", "CA"))
+            .searchPlaceholder,
+        "Rechercher");
+    expect(
+        BottomPickerLocalizations.byLocale(const Locale("it")).reset, "Reset");
+    expect(BottomPickerLocalizations.byLocale(const Locale("it")).noMoreData,
+        "Nessun dato in più");
+    expect(BottomPickerLocalizations.byLocale(const Locale("es")).empty,
+        "No hay datos");
     expect(BottomPickerLocalizations.byLocale(null).cancel, "Cancel");
     expect(const BottomPickerLocalizations().cancel, "Cancel");
   });
@@ -103,14 +121,20 @@ void main() {
       ),
     );
 
-    expect(dynamicConfig?.localizationBuilder?.call(tester.element(find.byType(SizedBox))).cancel, "Cancel");
+    expect(
+        dynamicConfig?.localizationBuilder
+            ?.call(tester.element(find.byType(SizedBox)))
+            .cancel,
+        "Cancel");
   });
 
-  testWidgets("picker global localizations support utility calls", (tester) async {
+  testWidgets("picker global localizations support utility calls",
+      (tester) async {
     late BottomPickerLocalizations fixedTexts;
     late BottomPickerLocalizations dynamicTexts;
 
-    BottomSheetPickers.setLocalizations(localizations: BottomPickerLocalizations.zh);
+    BottomSheetPickers.setLocalizations(
+        localizations: BottomPickerLocalizations.zh);
     await tester.pumpWidget(
       Localizations(
         locale: const Locale("en"),
@@ -126,7 +150,8 @@ void main() {
 
     expect(fixedTexts.cancel, "取消");
 
-    BottomSheetPickers.setLocalizations(builder: (context) => BottomPickerLocalizations.en);
+    BottomSheetPickers.setLocalizations(
+        builder: (context) => BottomPickerLocalizations.en);
     await tester.pumpWidget(
       Localizations(
         locale: const Locale("zh"),
@@ -145,17 +170,21 @@ void main() {
     BottomSheetPickers.clearLocalizations();
   });
 
-  testWidgets("picker local config overrides global localizations", (tester) async {
+  testWidgets("picker local config overrides global localizations",
+      (tester) async {
     late BottomPickerLocalizations texts;
 
-    BottomSheetPickers.setLocalizations(localizations: BottomPickerLocalizations.en);
+    BottomSheetPickers.setLocalizations(
+        localizations: BottomPickerLocalizations.en);
     await tester.pumpWidget(
       BottomPickerConfig(
         localizations: BottomPickerLocalizations.zh,
         child: Builder(
           builder: (context) {
             final config = BottomPickerConfig.maybeOf(context);
-            texts = BottomPickerLocalizations.resolve(context, texts: config?.localizations, textsBuilder: config?.localizationBuilder);
+            texts = BottomPickerLocalizations.resolve(context,
+                texts: config?.localizations,
+                textsBuilder: config?.localizationBuilder);
             return const SizedBox.shrink();
           },
         ),
@@ -167,7 +196,8 @@ void main() {
     BottomSheetPickers.clearLocalizations();
   });
 
-  testWidgets("picker localizations fill optional labels from current locale", (tester) async {
+  testWidgets("picker localizations fill optional labels from current locale",
+      (tester) async {
     late BottomPickerLocalizations texts;
 
     await tester.pumpWidget(
@@ -199,7 +229,9 @@ void main() {
     expect(texts.searchPlaceholder, "搜索");
   });
 
-  testWidgets("picker localizations fill optional labels from app locale when app locale is supported", (tester) async {
+  testWidgets(
+      "picker localizations fill optional labels from app locale when app locale is supported",
+      (tester) async {
     late BottomPickerLocalizations texts;
     tester.binding.platformDispatcher.localeTestValue = const Locale("zh");
     addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
@@ -230,7 +262,8 @@ void main() {
     expect(texts.loadingText, "กำลังโหลด...");
   });
 
-  testWidgets("picker built-in localizations fall back per optional label", (tester) async {
+  testWidgets("picker built-in localizations fall back per optional label",
+      (tester) async {
     late BottomPickerLocalizations texts;
 
     await tester.pumpWidget(
@@ -252,18 +285,17 @@ void main() {
     expect(texts.loadingText, "Carregando...");
   });
 
-  testWidgets("cascade single dismisses when tapping outside visible sheet", (tester) async {
+  testWidgets("cascade single dismisses when tapping outside visible sheet",
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
               onPressed: () {
-                BottomSheetPickers.cascade(context)
-                    .options(const [
-                      CascadeOption(id: "1", label: "Level 1"),
-                    ])
-                    .show();
+                BottomSheetPickers.cascade(context).options(const [
+                  CascadeOption(id: "1", label: "Level 1"),
+                ]).show();
               },
               child: const Text("open"),
             ),

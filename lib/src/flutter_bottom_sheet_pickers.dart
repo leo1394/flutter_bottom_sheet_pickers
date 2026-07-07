@@ -18,14 +18,21 @@ part 'cascade/cascade_selection.dart';
 part 'cascade/bottom_sheet_cascade_picker.dart';
 part 'cascade/bottom_sheet_cascade_multiple_picker.dart';
 part 'cascade/cascade_picker_content.dart';
+part 'calendar/calendar_models.dart';
+part 'calendar/calendar_picker_content.dart';
+part 'calendar/year_month_picker_content.dart';
+part 'calendar/bottom_sheet_date_picker.dart';
+part 'calendar/bottom_sheet_date_range_picker.dart';
+part 'calendar/bottom_sheet_year_month_picker.dart';
 part 'select/bottom_sheet_picker_content.dart';
 part 'select/bottom_sheet_single_picker.dart';
 part 'select/bottom_sheet_multiple_picker.dart';
 
 /// Entry point for creating bottom sheet pickers.
 ///
-/// Use [single], [multiple], or [cascade] to create a chainable picker and call
-/// `show()` at the end of the chain.
+/// Use [single], [multiple], [cascade], [calendar], [dateRange], or
+/// [yearMonth] to create a chainable picker and call `show()` at the end of
+/// the chain.
 class BottomSheetPickers {
   BottomSheetPickers._();
 
@@ -121,6 +128,89 @@ class BottomSheetPickers {
       itemBuilder: itemBuilder,
       isFullRowItem: isFullRowItem,
       alignment: alignment,
+      themeData: themeData,
+    );
+  }
+
+  /// Creates a chainable single date calendar picker.
+  ///
+  /// The picker returns a [DateTime] when confirm is tapped. [firstDate] and
+  /// [lastDate] bound the selectable dates and also control whether month and
+  /// year navigation buttons are shown. Passing [calendarType] displays helper
+  /// labels for the requested calendar while the main header stays Gregorian.
+  static BottomSheetDatePicker calendar(
+    BuildContext context, {
+    String? title,
+    CalendarType? calendarType,
+    DateTime? initialDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
+    BottomPickerTheme themeData = BottomPickerTheme.defaults,
+  }) {
+    return BottomSheetDatePicker._(
+      context,
+      title: title,
+      calendarType: calendarType ?? CalendarType.gregorian,
+      isCalendarTypeSpecified: calendarType != null,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      themeData: themeData,
+    );
+  }
+
+  /// Creates a chainable date range calendar picker.
+  ///
+  /// The picker returns a [DateTimeRange] when both start and end dates are
+  /// selected and confirm is tapped. [firstDate] and [lastDate] bound the
+  /// selectable dates and the month/year navigation controls.
+  static BottomSheetDateRangePicker dateRange(
+    BuildContext context, {
+    String? title,
+    CalendarType? calendarType,
+    DateTimeRange? initialDateRange,
+    DateTime? firstDate,
+    DateTime? lastDate,
+    BottomPickerTheme themeData = BottomPickerTheme.defaults,
+  }) {
+    return BottomSheetDateRangePicker._(
+      context,
+      title: title,
+      calendarType: calendarType ?? CalendarType.gregorian,
+      isCalendarTypeSpecified: calendarType != null,
+      initialDateRange: initialDateRange,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      themeData: themeData,
+    );
+  }
+
+  /// Creates a chainable year-month picker.
+  ///
+  /// Set [isRange] or call `range()` on the returned builder for range
+  /// selection. A single picker returns [YearMonth]; a range picker returns
+  /// [YearMonthRange]. [firstYearMonth] and [lastYearMonth] bound the wheel
+  /// candidates.
+  static BottomSheetYearMonthPicker yearMonth(
+    BuildContext context, {
+    String? title,
+    CalendarType calendarType = CalendarType.gregorian,
+    YearMonth? initialYearMonth,
+    YearMonthRange? initialYearMonthRange,
+    YearMonth? firstYearMonth,
+    YearMonth? lastYearMonth,
+    bool isRange = false,
+    BottomPickerTheme themeData = BottomPickerTheme.defaults,
+  }) {
+    return BottomSheetYearMonthPicker._(
+      context,
+      title: title,
+      calendarType: calendarType,
+      initialYearMonth: initialYearMonth,
+      initialYearMonthRange: initialYearMonthRange,
+      firstYearMonth: firstYearMonth,
+      lastYearMonth: lastYearMonth,
+      isRange: isRange,
       themeData: themeData,
     );
   }

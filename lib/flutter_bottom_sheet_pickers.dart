@@ -9,6 +9,9 @@ export 'src/flutter_bottom_sheet_pickers.dart'
     hide
         BottomSheetCascadeMultiplePicker,
         BottomSheetCascadePicker,
+        BottomSheetDatePicker,
+        BottomSheetDateRangePicker,
+        BottomSheetYearMonthPicker,
         BottomSheetMultiplePicker,
         BottomSheetSinglePicker,
         BottomSheetPickerContent,

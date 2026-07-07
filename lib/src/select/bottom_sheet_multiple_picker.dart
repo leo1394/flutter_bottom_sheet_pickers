@@ -105,6 +105,12 @@ class BottomSheetMultiplePicker<T> {
     return this;
   }
 
+  /// Shows a checkbox before each option to indicate selected values.
+  BottomSheetMultiplePicker<T> checkbox() {
+    _picker.checkbox();
+    return this;
+  }
+
   /// Sets the bottom sheet content height in logical pixels.
   BottomSheetMultiplePicker<T> height(double value) {
     _picker.height(value);

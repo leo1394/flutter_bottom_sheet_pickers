@@ -13,6 +13,7 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
   ItemBuilder<T>? itemBuilder;
   bool? isFullRowItem;
   bool isAllowNoSelection = false;
+  bool isCheckbox = false;
   Alignment? alignment;
   List<T> announcedData = <T>[];
   List<T> disabledValues = <T>[];
@@ -34,6 +35,7 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
     this.disabledValues = const [],
     this.isFullRowItem = false,
     this.isAllowNoSelection = false,
+    this.isCheckbox = false,
     this.alignment = Alignment.centerLeft,
     required this.announcedData,
     this.initialValue,
@@ -68,6 +70,18 @@ class _BottomSheetPickerContentState<T>
   }
 
   List<T> _data = <T>[];
+
+  void _toggleItem(T element, bool checked) {
+    if (widget.mode == SelectionMode.SINGLE) {
+      widget.initialValue = checked ? null : element;
+    } else {
+      if (checked) {
+        (widget.initialValue as Set<T>).remove(element);
+      } else {
+        (widget.initialValue as Set<T>).add(element);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -127,21 +141,15 @@ class _BottomSheetPickerContentState<T>
                 ? element == widget.initialValue
                 : (widget.initialValue as Set<T>).contains(element);
             final disabled = widget.disabledValues.contains(element);
+            final showCheckbox =
+                widget.mode == SelectionMode.MULTIPLE && widget.isCheckbox;
             return InkWell(
               onTap: () {
                 if (disabled) {
                   return;
                 }
                 setModalState(() {
-                  if (widget.mode == SelectionMode.SINGLE) {
-                    widget.initialValue = checked ? null : element;
-                  } else {
-                    if (checked) {
-                      (widget.initialValue as Set<T>).remove(element);
-                    } else {
-                      (widget.initialValue as Set<T>).add(element);
-                    }
-                  }
+                  _toggleItem(element, checked);
                 });
                 if (widget.confirmOnTap &&
                     widget.mode == SelectionMode.SINGLE) {
@@ -158,6 +166,19 @@ class _BottomSheetPickerContentState<T>
                         : Colors.transparent,
                 child: Row(
                   children: [
+                    if (showCheckbox)
+                      SizedBox(
+                        width: 30,
+                        height: 24,
+                        child: Checkbox(
+                          value: checked,
+                          activeColor: widget.themeData.checkedColor,
+                          onChanged: disabled
+                              ? null
+                              : (_) => setModalState(
+                                  () => _toggleItem(element, checked)),
+                        ),
+                      ),
                     Expanded(
                         child: widget.itemBuilder != null
                             ? widget.itemBuilder!(
@@ -173,7 +194,7 @@ class _BottomSheetPickerContentState<T>
                                   ),
                                 ),
                               )),
-                    if (widget.isFullRowItem != true)
+                    if (widget.isFullRowItem != true && !showCheckbox)
                       Icon(
                         checked ? Icons.check : null,
                         size: 18,

@@ -154,6 +154,21 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
             onPressed: _showLazyPicker,
             child: const Text("Show lazy picker"),
           ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _showCalendarPicker,
+            child: const Text("Show calendar picker"),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _showCalendarRangePicker,
+            child: const Text("Show calendar range picker"),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _showYearMonthPicker,
+            child: const Text("Show year month picker"),
+          ),
         ],
       ),
     );
@@ -217,6 +232,52 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
         return List<String>.generate(
             10, (index) => "Item ${(pageIndex - 1) * 10 + index + 1}");
       },
+    ).show();
+    _updateResult(selected);
+  }
+
+  Future<void> _showCalendarPicker() async {
+    final selected = await BottomSheetPickers.calendar(
+      context,
+      title: "Choose date",
+      calendarType: CalendarType.buddhist,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020, 1, 1),
+      lastDate: DateTime(2030, 12, 31),
+      themeData: _theme,
+    ).show();
+    _updateResult(selected);
+  }
+
+  Future<void> _showCalendarRangePicker() async {
+    final selected = await BottomSheetPickers.dateRange(
+      context,
+      title: "Choose date range",
+      calendarType: CalendarType.islamic,
+      initialDateRange: DateTimeRange(
+        start: DateTime.now(),
+        end: DateTime.now().add(const Duration(days: 3)),
+      ),
+      firstDate: DateTime(2020, 1, 1),
+      lastDate: DateTime(2030, 12, 31),
+      themeData: _theme,
+    ).show();
+    _updateResult(selected);
+  }
+
+  Future<void> _showYearMonthPicker() async {
+    final selected = await BottomSheetPickers.yearMonth(
+      context,
+      title: "Choose year month",
+      initialYearMonthRange: YearMonthRange(
+        start: YearMonth.fromDateTime(DateTime.now()),
+        end: YearMonth.fromDateTime(
+            DateTime.now().add(const Duration(days: 90))),
+      ),
+      firstYearMonth: const YearMonth(2020, 1),
+      lastYearMonth: const YearMonth(2030, 12),
+      isRange: true,
+      themeData: _theme,
     ).show();
     _updateResult(selected);
   }

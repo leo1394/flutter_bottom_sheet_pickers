@@ -12,6 +12,7 @@ class _BottomSheetPicker<T> {
   bool isFullRowItem = false;
   bool isAllowNoSelection = false;
   bool isConfirmOnTap = false;
+  bool isCheckbox = false;
   double? sheetHeight;
   LazyRequestFuture<T>? _lazyRequestFuture;
   Map<String, dynamic>? _parameters = {};
@@ -116,6 +117,12 @@ class _BottomSheetPicker<T> {
     return this;
   }
 
+  /// 初始化多选项显示 checkbox
+  _BottomSheetPicker checkbox() {
+    this.isCheckbox = true;
+    return this;
+  }
+
   /// 初始化 bottom sheet 弹窗高度
   _BottomSheetPicker height(double value) {
     this.sheetHeight = value;
@@ -207,6 +214,7 @@ class _BottomSheetPicker<T> {
             itemBuilder: itemBuilder,
             isFullRowItem: isFullRowItem,
             isAllowNoSelection: isAllowNoSelection,
+            isCheckbox: isCheckbox,
             alignment: alignment,
             announcedData: _announcedData,
             disabledValues: _disabledValues.cast<T>(),

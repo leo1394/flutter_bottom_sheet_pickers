@@ -27,6 +27,12 @@ class BottomPickerLocalizations {
   final String? _noMoreData;
   final String? _all;
   final String? _searchPlaceholder;
+  final Map<CalendarType, String>? _calendarNames;
+  final List<String>? _lunarMonths;
+  final List<String>? _lunarDays;
+  final List<String>? _hebrewMonths;
+  final List<String>? _narrowWeekdays;
+  final int? _firstDayOfWeekIndex;
 
   /// Text shown while lazy data is loading.
   String get loadingText =>
@@ -46,6 +52,30 @@ class BottomPickerLocalizations {
   String get searchPlaceholder =>
       _searchPlaceholder ?? BottomPickerLocalizations.en.searchPlaceholder;
 
+  /// Display names for supported calendar systems.
+  Map<CalendarType, String> get calendarNames =>
+      _calendarNames ?? BottomPickerLocalizations.en.calendarNames;
+
+  /// Month labels used by Chinese lunar calendar display.
+  List<String> get lunarMonths =>
+      _lunarMonths ?? BottomPickerLocalizations.en.lunarMonths;
+
+  /// Day labels used by Chinese lunar calendar display.
+  List<String> get lunarDays =>
+      _lunarDays ?? BottomPickerLocalizations.en.lunarDays;
+
+  /// Month labels used by Hebrew calendar display.
+  List<String> get hebrewMonths =>
+      _hebrewMonths ?? BottomPickerLocalizations.en.hebrewMonths;
+
+  /// Narrow weekday labels ordered from Sunday to Saturday.
+  List<String> get narrowWeekdays =>
+      _narrowWeekdays ?? BottomPickerLocalizations.en.narrowWeekdays;
+
+  /// First day of week index, where 0 is Sunday and 6 is Saturday.
+  int get firstDayOfWeekIndex =>
+      _firstDayOfWeekIndex ?? BottomPickerLocalizations.en.firstDayOfWeekIndex;
+
   /// Creates picker texts.
   ///
   /// Provide only the labels that need to be overridden. Unset labels fall back
@@ -60,6 +90,12 @@ class BottomPickerLocalizations {
     String? noMoreData,
     String? all,
     String? searchPlaceholder,
+    Map<CalendarType, String>? calendarNames,
+    List<String>? lunarMonths,
+    List<String>? lunarDays,
+    List<String>? hebrewMonths,
+    List<String>? narrowWeekdays,
+    int? firstDayOfWeekIndex,
   })  : _cancel = cancel,
         _reset = reset,
         _confirm = confirm,
@@ -68,7 +104,13 @@ class BottomPickerLocalizations {
         _empty = empty,
         _noMoreData = noMoreData,
         _all = all,
-        _searchPlaceholder = searchPlaceholder;
+        _searchPlaceholder = searchPlaceholder,
+        _calendarNames = calendarNames,
+        _lunarMonths = lunarMonths,
+        _lunarDays = lunarDays,
+        _hebrewMonths = hebrewMonths,
+        _narrowWeekdays = narrowWeekdays,
+        _firstDayOfWeekIndex = firstDayOfWeekIndex;
 
   /// Built-in English labels.
   static const BottomPickerLocalizations en = BuiltInLocalizations.en;
@@ -121,6 +163,62 @@ class BottomPickerLocalizations {
     return BottomPickerLocalizations.en;
   }
 
+  static BottomPickerLocalizations _fallbackForResolved(
+      BottomPickerLocalizations resolved,
+      BottomPickerLocalizations contextFallback) {
+    final builtIns = [
+      BottomPickerLocalizations.en,
+      BottomPickerLocalizations.zh,
+      BottomPickerLocalizations.zhHant,
+      BottomPickerLocalizations.th,
+      BottomPickerLocalizations.my,
+      BottomPickerLocalizations.ptBR,
+      BottomPickerLocalizations.frCA,
+      BottomPickerLocalizations.it,
+      BottomPickerLocalizations.es,
+    ];
+    BottomPickerLocalizations? bestMatch;
+    int bestScore = 0;
+    for (final item in builtIns) {
+      int score = 0;
+      if (resolved._cancel != null && resolved._cancel == item.cancel) {
+        score++;
+      }
+      if (resolved._reset != null && resolved._reset == item.reset) {
+        score++;
+      }
+      if (resolved._confirm != null && resolved._confirm == item.confirm) {
+        score++;
+      }
+      if (resolved._noData != null && resolved._noData == item.noData) {
+        score++;
+      }
+      if (resolved._loadingText != null &&
+          resolved._loadingText == item.loadingText) {
+        score++;
+      }
+      if (resolved._empty != null && resolved._empty == item.empty) {
+        score++;
+      }
+      if (resolved._noMoreData != null &&
+          resolved._noMoreData == item.noMoreData) {
+        score++;
+      }
+      if (resolved._all != null && resolved._all == item.all) {
+        score++;
+      }
+      if (resolved._searchPlaceholder != null &&
+          resolved._searchPlaceholder == item.searchPlaceholder) {
+        score++;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = item;
+      }
+    }
+    return bestMatch ?? contextFallback;
+  }
+
   /// Fills optional labels with labels from [fallback].
   ///
   /// This lets apps override only a few labels while keeping built-in text for
@@ -136,6 +234,12 @@ class BottomPickerLocalizations {
       noMoreData: _noMoreData ?? fallback.noMoreData,
       all: _all ?? fallback.all,
       searchPlaceholder: _searchPlaceholder ?? fallback.searchPlaceholder,
+      calendarNames: _calendarNames ?? fallback.calendarNames,
+      lunarMonths: _lunarMonths ?? fallback.lunarMonths,
+      lunarDays: _lunarDays ?? fallback.lunarDays,
+      hebrewMonths: _hebrewMonths ?? fallback.hebrewMonths,
+      narrowWeekdays: _narrowWeekdays ?? fallback.narrowWeekdays,
+      firstDayOfWeekIndex: _firstDayOfWeekIndex ?? fallback.firstDayOfWeekIndex,
     );
   }
 
@@ -157,6 +261,7 @@ class BottomPickerLocalizations {
         texts ??
         BottomPickerConfig.defaultLocalizationBuilder?.call(context) ??
         BottomPickerConfig.defaultLocalizations;
-    return resolved?.mergeWith(fallback) ?? fallback;
+    return resolved?.mergeWith(_fallbackForResolved(resolved, fallback)) ??
+        fallback;
   }
 }

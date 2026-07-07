@@ -1,0 +1,7 @@
+---
+description: flutter_bottom_sheet_pickers usage context
+globs: **/*.dart
+alwaysApply: false
+---
+
+Use `BottomSheetPickers.single`, `multiple`, `cascade`, `calendar`, `dateRange`, and `yearMonth`. Always call `.show()` last. Prefer package-provided models: `CascadeOption`, `CascadeSelection`, `CalendarType`, `YearMonth`, `YearMonthRange`, `BottomPickerTheme`, and `BottomPickerLocalizations`.

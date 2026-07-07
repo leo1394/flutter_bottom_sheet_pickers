@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Add vibe coding agent context for Codex, Claude, Cursor, and Copilot.
+
 ## 0.1.2
 
 - Improved date and date range calendar day cell states, including distinct today styling and visible helper labels for selected dates.

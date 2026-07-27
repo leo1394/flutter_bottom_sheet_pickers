@@ -27,6 +27,7 @@ class BottomPickerLocalizations {
   final String? _noMoreData;
   final String? _all;
   final String? _searchPlaceholder;
+  final String? _selectedCount;
   final Map<CalendarType, String>? _calendarNames;
   final List<String>? _lunarMonths;
   final List<String>? _lunarDays;
@@ -51,6 +52,14 @@ class BottomPickerLocalizations {
   /// Placeholder used by the search input.
   String get searchPlaceholder =>
       _searchPlaceholder ?? BottomPickerLocalizations.en.searchPlaceholder;
+
+  /// Text shown for selected item count. Use `{count}` as the count token.
+  String selectedCountText(int count) {
+    final template = _selectedCount ??
+        BottomPickerLocalizations.en._selectedCount ??
+        "{count}";
+    return template.replaceAll("{count}", count.toString());
+  }
 
   /// Display names for supported calendar systems.
   Map<CalendarType, String> get calendarNames =>
@@ -90,6 +99,7 @@ class BottomPickerLocalizations {
     String? noMoreData,
     String? all,
     String? searchPlaceholder,
+    String? selectedCount,
     Map<CalendarType, String>? calendarNames,
     List<String>? lunarMonths,
     List<String>? lunarDays,
@@ -105,6 +115,7 @@ class BottomPickerLocalizations {
         _noMoreData = noMoreData,
         _all = all,
         _searchPlaceholder = searchPlaceholder,
+        _selectedCount = selectedCount,
         _calendarNames = calendarNames,
         _lunarMonths = lunarMonths,
         _lunarDays = lunarDays,
@@ -211,6 +222,10 @@ class BottomPickerLocalizations {
           resolved._searchPlaceholder == item.searchPlaceholder) {
         score++;
       }
+      if (resolved._selectedCount != null &&
+          resolved.selectedCountText(1) == item.selectedCountText(1)) {
+        score++;
+      }
       if (score > bestScore) {
         bestScore = score;
         bestMatch = item;
@@ -234,6 +249,7 @@ class BottomPickerLocalizations {
       noMoreData: _noMoreData ?? fallback.noMoreData,
       all: _all ?? fallback.all,
       searchPlaceholder: _searchPlaceholder ?? fallback.searchPlaceholder,
+      selectedCount: _selectedCount ?? fallback._selectedCount,
       calendarNames: _calendarNames ?? fallback.calendarNames,
       lunarMonths: _lunarMonths ?? fallback.lunarMonths,
       lunarDays: _lunarDays ?? fallback.lunarDays,

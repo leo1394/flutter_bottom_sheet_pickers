@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 part 'common/fnc_types.dart';
 part 'common/selection_mode.dart';
+part 'common/picker_filter.dart';
 part 'common/built_in_localizations.dart';
 part 'common/bottom_sheet_picker_theme.dart';
 part 'common/bottom_sheet_picker.dart';

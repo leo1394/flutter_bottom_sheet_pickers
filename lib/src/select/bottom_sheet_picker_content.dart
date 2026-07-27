@@ -7,6 +7,7 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
   String? title;
   String? placeholder;
   bool? isSearchSupported = true;
+  PickerFilter<T, dynamic>? filter;
   SelectionMode mode = SelectionMode.SINGLE;
   Map<String, dynamic>? parameters = {};
   LazyRequestFuture<T>? lazyRequestFuture;
@@ -28,6 +29,7 @@ class BottomSheetPickerContent<T> extends StatefulWidget {
     this.title,
     this.placeholder,
     this.isSearchSupported = true,
+    this.filter,
     this.mode = SelectionMode.SINGLE,
     this.parameters,
     this.lazyRequestFuture,
@@ -59,9 +61,14 @@ class _BottomSheetPickerContentState<T>
   Object? Function()? onConfirm;
   Widget Function(BuildContext context, StateSetter setModalState)? _builder;
   String? _keyword;
+  dynamic _filterValue;
   int _pageIndex = 0;
   bool _isLoading = false;
   bool _isAllDataLoaded = false;
+  bool get _isFilterActive =>
+      widget.isSearchSupported == true &&
+      widget.filter != null &&
+      widget.filter!.options.isNotEmpty;
   bool get _isConfirmEnabled {
     return widget.isAllowNoSelection ||
         (widget.mode == SelectionMode.SINGLE
@@ -87,6 +94,7 @@ class _BottomSheetPickerContentState<T>
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: _keyword ?? '');
+    _filterValue = widget.filter?.initialValue;
     _scrollController = ScrollController();
     _dataNotifier = ValueNotifier(<T>[]);
 
@@ -239,6 +247,25 @@ class _BottomSheetPickerContentState<T>
     setState(() {});
   }
 
+  void _onFilterChanged(dynamic value) {
+    if (_filterValue == value) {
+      return;
+    }
+    _filterValue = value;
+    widget.filter?.notifyChanged(value);
+    _pageIndex = 0;
+    _isLoading = false;
+    _isAllDataLoaded = false;
+    _data = [];
+    _dataNotifier.value = [];
+    if (widget.lazyRequestFuture == null) {
+      _applyLocalFilter();
+      setState(() {});
+      return;
+    }
+    setState(() {});
+  }
+
   void onScroll() {
     if (widget.lazyRequestFuture == null ||
         _isAllDataLoaded ||
@@ -252,12 +279,16 @@ class _BottomSheetPickerContentState<T>
 
   void _applyLocalFilter() {
     final String searchKeyword = (_keyword ?? '').trim().toLowerCase();
-    _data = searchKeyword.isEmpty
-        ? List<T>.from(widget.announcedData)
-        : widget.announcedData
-            .where((option) =>
-                option.toString().toLowerCase().contains(searchKeyword))
-            .toList();
+    Iterable<T> data = widget.announcedData;
+    if (searchKeyword.isNotEmpty) {
+      data = data.where(
+          (option) => option.toString().toLowerCase().contains(searchKeyword));
+    }
+    if (_isFilterActive && widget.filter?.mode == PickerFilterMode.local) {
+      data = data.where(
+          (option) => widget.filter!.applyPredicate(option, _filterValue));
+    }
+    _data = data.toList();
     _isLoading = false;
     _isAllDataLoaded = true;
     _dataNotifier.value = List<T>.from(_data);
@@ -280,6 +311,8 @@ class _BottomSheetPickerContentState<T>
     _isLoading = true;
     final Map<String, dynamic> paramObj = {
       ...?widget.parameters,
+      if (_isFilterActive && widget.filter?.mode == PickerFilterMode.remote)
+        ...widget.filter!.buildParameters(_filterValue),
       "page_index": _pageIndex,
       "page_size": _defaultPageSize,
       "keyword": _keyword
@@ -297,6 +330,163 @@ class _BottomSheetPickerContentState<T>
     }
     _dataNotifier.value = List<T>.from(_data);
     setState(() {});
+  }
+
+  Widget _buildSearchAndFilter(BottomPickerLocalizations texts) {
+    if (!_isFilterActive) {
+      return TextField(
+        controller: _searchController,
+        textInputAction: TextInputAction.search,
+        onChanged: (value) => setState(() => _keyword = value),
+        onSubmitted: (_) => onResetAndSearch(),
+        decoration: InputDecoration(
+          constraints: BoxConstraints(maxHeight: 40),
+          hintText: widget.placeholder ?? texts.searchPlaceholder,
+          hintStyle: TextStyle(
+            fontSize: 14,
+            color: const Color(0xFF9FAABB),
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: Color(0xFF9FAABB),
+            size: 20,
+          ),
+          suffixIcon: (_keyword ?? '').trim().isNotEmpty
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.clear,
+                    color: Color(0xFF9FAABB),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _keyword = '';
+                      _searchController.clear();
+                    });
+                    onResetAndSearch();
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: const Color(0x0D000000),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      );
+    }
+    final filterOptions = widget.filter!.displayOptions;
+    final selectedFilter = filterOptions.firstWhere(
+        (option) => option.value == _filterValue,
+        orElse: () => filterOptions.first);
+    final selectedFilterIndex =
+        filterOptions.indexWhere((option) => option.value == _filterValue);
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0x0D000000),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Row(
+        children: [
+          PopupMenuButton<int>(
+            initialValue: selectedFilterIndex < 0 ? 0 : selectedFilterIndex,
+            color: Colors.white,
+            surfaceTintColor: Colors.white,
+            position: PopupMenuPosition.under,
+            offset: const Offset(0, 4),
+            onSelected: (index) => _onFilterChanged(filterOptions[index].value),
+            itemBuilder: (context) => filterOptions
+                .asMap()
+                .entries
+                .map((entry) => PopupMenuItem<int>(
+                      value: entry.key,
+                      child: Text(
+                        entry.value.label,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: entry.value.value == _filterValue
+                              ? widget.themeData.checkedColor
+                              : const Color(0xFF262626),
+                        ),
+                      ),
+                    ))
+                .toList(),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 14, right: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    selectedFilter.label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF262626),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_drop_down,
+                    size: 18,
+                    color: Color(0xFF262626),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 22,
+            color: const Color(0xFFE1E5EE),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              onChanged: (value) => setState(() => _keyword = value),
+              onSubmitted: (_) => onResetAndSearch(),
+              decoration: InputDecoration(
+                constraints: BoxConstraints(maxHeight: 40),
+                hintText: widget.placeholder ?? texts.searchPlaceholder,
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  color: const Color(0xFF9FAABB),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Color(0xFF9FAABB),
+                  size: 20,
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 25,
+                  minHeight: 40,
+                ),
+                suffixIcon: (_keyword ?? '').trim().isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear,
+                          color: Color(0xFF9FAABB),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _keyword = '';
+                            _searchController.clear();
+                          });
+                          onResetAndSearch();
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.fromLTRB(2, 2, 5, 2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -354,48 +544,21 @@ class _BottomSheetPickerContentState<T>
                         if (widget.isSearchSupported == true)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                            child: TextField(
-                              controller: _searchController,
-                              textInputAction: TextInputAction.search,
-                              onChanged: (value) =>
-                                  setState(() => _keyword = value),
-                              onSubmitted: (_) => onResetAndSearch(),
-                              decoration: InputDecoration(
-                                constraints: BoxConstraints(maxHeight: 40),
-                                hintText: widget.placeholder ??
-                                    texts.searchPlaceholder,
-                                hintStyle: TextStyle(
-                                  fontSize: 14,
-                                  color: const Color(0xFF9FAABB),
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  color: Color(0xFF9FAABB),
-                                  size: 20,
-                                ),
-                                suffixIcon: (_keyword ?? '').trim().isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(
-                                          Icons.clear,
-                                          color: Color(0xFF9FAABB),
-                                          size: 20,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _keyword = '';
-                                            _searchController.clear();
-                                          });
-                                          onResetAndSearch();
-                                        },
-                                      )
-                                    : null,
-                                filled: true,
-                                fillColor: const Color(0x0D000000),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 5),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                  borderSide: BorderSide.none,
+                            child: _buildSearchAndFilter(texts),
+                          ),
+                        if (widget.mode == SelectionMode.MULTIPLE &&
+                            _isFilterActive &&
+                            (widget.initialValue as Set<T>).isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                texts.selectedCountText(
+                                    (widget.initialValue as Set<T>).length),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: widget.themeData.checkedColor,
                                 ),
                               ),
                             ),

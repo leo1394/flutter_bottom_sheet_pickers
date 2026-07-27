@@ -1,3 +1,12 @@
+## 0.1.4
+
+- Added optional select picker filters through `withFilterSupported`.
+- Added local filter mode for in-memory options and remote filter mode for lazy loading request parameters.
+- Preserved multiple picker selections across filter changes and added localized selected-count text.
+- Improved filter popup placement, white popup styling, and search field spacing when filters are enabled.
+- Fixed filter options with null values, such as an "All" option, so they can be selected reliably.
+- Expanded README documentation and the example app with local and remote filter examples.
+
 ## 0.1.3
 
 - Add vibe coding agent context for Codex, Claude, Cursor, and Copilot.

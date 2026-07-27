@@ -14,6 +14,7 @@ class _BottomSheetPicker<T> {
   bool isConfirmOnTap = false;
   bool isCheckbox = false;
   double? sheetHeight;
+  PickerFilter<T, dynamic>? filter;
   LazyRequestFuture<T>? _lazyRequestFuture;
   Map<String, dynamic>? _parameters = {};
   List<T> _announcedData = <T>[];
@@ -70,9 +71,7 @@ class _BottomSheetPicker<T> {
       {List<T>? options, List<T>? initialValue, List<T>? disabledValues}) {
     this.mode = SelectionMode.MULTIPLE;
     _announcedData = options ?? <T>[];
-    if (initialValue != null) {
-      _tempSelected = {...initialValue};
-    }
+    _tempSelected = {...(initialValue ?? <T>[])};
     if (disabledValues != null) {
       _disabledValues = disabledValues;
     }
@@ -138,10 +137,12 @@ class _BottomSheetPicker<T> {
     this._lazyRequestFuture = lazyRequestFuture;
     this._parameters = parameters;
     _announcedData = <T>[];
-    if (initialValue != null) {
-      _tempSelected = this.mode == SelectionMode.SINGLE
-          ? initialValue as T?
-          : {...((initialValue ?? const []) as List<T>)};
+    if (this.mode == SelectionMode.SINGLE) {
+      if (initialValue != null) {
+        _tempSelected = initialValue as T?;
+      }
+    } else {
+      _tempSelected = {...((initialValue ?? <T>[]) as List<T>)};
     }
     if (disabledValues != null) {
       _disabledValues = disabledValues;
@@ -155,6 +156,12 @@ class _BottomSheetPicker<T> {
     if (placeholder != null) {
       this.placeholder = placeholder;
     }
+    return this;
+  }
+
+  /// 初始化支持筛选选择器
+  _BottomSheetPicker withFilterSupported<F>(PickerFilter<T, F> filter) {
+    this.filter = filter as PickerFilter<T, dynamic>;
     return this;
   }
 
@@ -208,6 +215,7 @@ class _BottomSheetPicker<T> {
             title: title,
             placeholder: placeholder,
             isSearchSupported: isSearchSupported,
+            filter: filter,
             mode: mode,
             parameters: _parameters,
             lazyRequestFuture: _lazyRequestFuture,

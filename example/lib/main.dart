@@ -113,6 +113,15 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
     ),
   ];
 
+  final List<String> _stores = const [
+    "PVS Store 001",
+    "PVS Store 002",
+    "FS Store 001",
+    "FS Store 002",
+    "KIOSK Store 001",
+    "KIOSK Store 002",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +162,16 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
           FilledButton(
             onPressed: _showLazyPicker,
             child: const Text("Show lazy picker"),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _showLocalFilterPicker,
+            child: const Text("Show local filter picker"),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _showRemoteFilterPicker,
+            child: const Text("Show remote filter picker"),
           ),
           const SizedBox(height: 12),
           FilledButton(
@@ -231,6 +250,77 @@ class _PickerExampleHomeState extends State<PickerExampleHome> {
         final int pageIndex = params["page_index"] as int? ?? 1;
         return List<String>.generate(
             10, (index) => "Item ${(pageIndex - 1) * 10 + index + 1}");
+      },
+    ).show();
+    _updateResult(selected);
+  }
+
+  Future<void> _showLocalFilterPicker() async {
+    final selected = await BottomSheetPickers.multiple<String>(
+      context,
+      title: "Choose stores",
+      themeData: _theme,
+    )
+        .options(_stores)
+        .searchSupported(placeholder: "Search store")
+        .withFilterSupported(
+          PickerFilter<String, String>.local(
+            options: const [
+              PickerFilterOption(value: null, label: "All"),
+              PickerFilterOption(value: "PVS", label: "PVS"),
+              PickerFilterOption(value: "FS", label: "FS"),
+              PickerFilterOption(value: "KIOSK", label: "KIOSK"),
+            ],
+            predicate: (option, filter) =>
+                filter == null || option.startsWith(filter),
+          ),
+        )
+        .checkbox()
+        .show();
+    _updateResult(selected);
+  }
+
+  Future<void> _showRemoteFilterPicker() async {
+    final selected = await BottomSheetPickers.single<String>(
+      context,
+      title: "Choose remote store",
+      themeData: _theme,
+    )
+        .searchSupported(placeholder: "Search store")
+        .withFilterSupported(
+          PickerFilter<String, String>.remote(
+            options: const [
+              PickerFilterOption(value: null, label: "All"),
+              PickerFilterOption(value: "PVS", label: "PVS"),
+              PickerFilterOption(value: "FS", label: "FS"),
+              PickerFilterOption(value: "KIOSK", label: "KIOSK"),
+            ],
+            parameterBuilder: (filter) => {
+              if (filter != null) "store_type": filter,
+            },
+          ),
+        )
+        .lazyLoad(
+      lazyRequestFuture: (params) async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        final int pageIndex = params["page_index"] as int? ?? 1;
+        final int pageSize = params["page_size"] as int? ?? 50;
+        final String? keyword = params["keyword"] as String?;
+        final String? filter = params["store_type"] as String?;
+        final data = _stores.where((store) {
+          final matchesFilter = filter == null || store.startsWith(filter);
+          final matchesKeyword = keyword == null ||
+              keyword.isEmpty ||
+              store.toLowerCase().contains(keyword.toLowerCase());
+          return matchesFilter && matchesKeyword;
+        }).toList();
+        final start = (pageIndex - 1) * pageSize;
+        if (start >= data.length) {
+          return <String>[];
+        }
+        final end =
+            start + pageSize > data.length ? data.length : start + pageSize;
+        return data.sublist(start, end);
       },
     ).show();
     _updateResult(selected);

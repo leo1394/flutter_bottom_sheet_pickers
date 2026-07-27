@@ -377,6 +377,126 @@ void main() {
     expect(tester.widget<Checkbox>(find.byType(Checkbox).last).value, true);
   });
 
+  testWidgets("multiple picker local filter preserves cross filter selections",
+      (tester) async {
+    Future<List<String>?>? result;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () {
+                result = BottomSheetPickers.multiple<String>(context)
+                    .options(const ["PVS Store", "FS Store"])
+                    .searchSupported()
+                    .withFilterSupported(
+                      PickerFilter<String, String>.local(
+                        options: const [
+                          PickerFilterOption(value: null, label: "All"),
+                          PickerFilterOption(value: "PVS", label: "PVS"),
+                          PickerFilterOption(value: "FS", label: "FS"),
+                        ],
+                        predicate: (option, filter) =>
+                            filter == null || option.startsWith(filter),
+                      ),
+                    )
+                    .show();
+              },
+              child: const Text("open"),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text("open"));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text("PVS Store"));
+    await tester.pump();
+    expect(find.text("Selected 1"), findsOneWidget);
+
+    await tester.tap(find.text("All").first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("FS").last);
+    await tester.pumpAndSettle();
+
+    expect(find.text("PVS Store"), findsNothing);
+    expect(find.text("FS Store"), findsOneWidget);
+    expect(find.text("Selected 1"), findsOneWidget);
+
+    await tester.tap(find.text("FS Store"));
+    await tester.pump();
+    expect(find.text("Selected 2"), findsOneWidget);
+
+    await tester.tap(find.text("Confirm"));
+    await tester.pumpAndSettle();
+
+    expect(await result, containsAll(["PVS Store", "FS Store"]));
+  });
+
+  testWidgets("single picker remote filter forwards lazy load parameters",
+      (tester) async {
+    final calls = <Map<String, dynamic>>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () {
+                BottomSheetPickers.single<String>(context)
+                    .searchSupported()
+                    .withFilterSupported(
+                      PickerFilter<String, String>.remote(
+                        options: const [
+                          PickerFilterOption(value: null, label: "All"),
+                          PickerFilterOption(value: "PVS", label: "PVS"),
+                        ],
+                        parameterBuilder: (filter) => {
+                          if (filter != null) "store_type": filter,
+                        },
+                      ),
+                    )
+                    .lazyLoad(
+                  parameters: const {"type": "inspection"},
+                  lazyRequestFuture: (params) async {
+                    calls.add(Map<String, dynamic>.from(params));
+                    return const <String>[];
+                  },
+                ).show();
+              },
+              child: const Text("open"),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text("open"));
+    await tester.pumpAndSettle();
+
+    expect(calls.first["store_type"], isNull);
+
+    await tester.tap(find.text("All").first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("PVS").last);
+    await tester.pumpAndSettle();
+
+    expect(calls.last["type"], "inspection");
+    expect(calls.last["store_type"], "PVS");
+
+    await tester.tap(find.text("PVS").first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("All").last);
+    await tester.pumpAndSettle();
+
+    expect(find.text("All"), findsOneWidget);
+    expect(calls.last["type"], "inspection");
+    expect(calls.last["store_type"], isNull);
+  });
+
   testWidgets("calendar date picker returns selected date", (tester) async {
     Future<dynamic>? result;
 

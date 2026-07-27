@@ -15,6 +15,7 @@
 - 单选选择器
 - 多选选择器
 - 搜索选择器
+- 搜索选择器可选本地 filter 或远程 lazy-load filter
 - 分页懒加载选择器，适合远程数据源
 - 最多三级级联选择器，支持单选和多选
 - 支持禁用部分选项、允许空选择确认、自定义 option row
@@ -23,6 +24,7 @@
 - 日历支持 Gregorian、农历、佛历、藏历、伊斯兰历、彝历、希伯来历辅助显示
 - 日历头部支持按月、按年快捷切换，并会根据允许日期范围自动隐藏不可用按钮
 - 底部弹窗布局，内置 cancel、reset、confirm 操作
+- filter 多选时保留跨 filter 已选项，并显示已选数量
 - 点击弹窗外区域会关闭弹窗，返回值与点击 cancel 一致
 - 支持主题色和按钮圆角配置
 - 内置英文、简体中文、繁体中文、泰文、缅甸语、巴西葡萄牙语、加拿大法语、意大利语、西班牙语文案
@@ -46,7 +48,7 @@
 
 ```yaml
 dependencies:
-  flutter_bottom_sheet_pickers: ^0.1.1
+  flutter_bottom_sheet_pickers: ^0.1.4
 ```
 
 导入：
@@ -61,6 +63,7 @@ import 'package:flutter_bottom_sheet_pickers/flutter_bottom_sheet_pickers.dart';
 | --- | --- | --- |
 | `BottomSheetPickers.single<T>(context)` | 普通单选、搜索单选、懒加载单选 | `Future<T?>` |
 | `BottomSheetPickers.multiple<T>(context)` | 普通多选、搜索多选、懒加载多选 | `Future<List<T>?>` |
+| `.withFilterSupported(...)` | 搜索选择器的本地或远程 filter 菜单 | 链式 builder |
 | `BottomSheetPickers.cascade(context)` | 最多三级级联单选 | `Future<CascadeSelection?>` |
 | `BottomSheetPickers.cascade(context).multiple()` | 最多三级级联多选 | `Future<List<CascadeSelection>?>` |
 | `BottomSheetPickers.calendar(context)` | 日期选择 | `Future<DateTime?>` |
@@ -161,6 +164,62 @@ final selected = await BottomSheetPickers.single<String>(
 ```
 
 `lazyRequestFuture` 会收到 `page_index`、`page_size`、`keyword` 参数，并需要返回当前页的 `List<T>`。如果打开了搜索，`keyword` 会随搜索关键字一起传入。
+
+### 搜索 + 本地 Filter
+
+```dart
+final List<String>? selected = await BottomSheetPickers.multiple<String>(
+  context,
+  title: "选择门店",
+).options(["PVS Store", "FS Store", "KIOSK Store"])
+    .searchSupported(placeholder: "搜索门店")
+    .withFilterSupported(
+      PickerFilter<String, String>.local(
+        options: const [
+          PickerFilterOption(value: null, label: "全部"),
+          PickerFilterOption(value: "PVS", label: "PVS"),
+          PickerFilterOption(value: "FS", label: "FS"),
+          PickerFilterOption(value: "KIOSK", label: "KIOSK"),
+        ],
+        predicate: (option, filter) =>
+            filter == null || option.startsWith(filter),
+      ),
+    )
+    .show();
+```
+
+本地 filter 会过滤已加载的内存 options。多选时切换 filter 不会清空已选项，picker 会显示已选数量，方便用户看到跨 filter 的选择。
+
+### 搜索 + 远程 Filter
+
+```dart
+final selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "选择门店",
+).searchSupported(placeholder: "搜索门店")
+    .withFilterSupported(
+      PickerFilter<String, int>.remote(
+        options: const [
+          PickerFilterOption(value: null, label: "全部"),
+          PickerFilterOption(value: 1, label: "PVS"),
+          PickerFilterOption(value: 2, label: "FS"),
+          PickerFilterOption(value: 3, label: "KIOSK"),
+        ],
+        parameterBuilder: (value) =>
+            value == null ? {} : {"store_type": value},
+      ),
+    )
+    .lazyLoad(
+      lazyRequestFuture: (params) async {
+        final storeType = params["store_type"] as int?;
+        final keyword = params["keyword"] as String?;
+        return loadStores(storeType: storeType, keyword: keyword);
+      },
+    )
+    .show();
+```
+
+远程 filter 会合并到 lazy-load 参数中。可以用 `null` 表示“全部”，并在不需要传 filter 时返回空参数 map。
 
 ### 级联选择
 
@@ -403,11 +462,12 @@ BottomSheetPickers.setLocalizations(
     cancel: context.i18n("cancel"),
     reset: context.i18n("reset"),
     confirm: context.i18n("confirm"),
+    selectedCount: context.i18n("selected_count"),
   ),
 );
 ```
 
-未配置的字段会继续按当前 locale 使用内置文案。
+`selectedCount` 支持 `{count}` 占位，例如 `已选 {count} 个`。未配置的字段会继续按当前 locale 使用内置文案。
 
 如需局部覆盖某个页面或区域，也可以使用 `BottomPickerConfig`：
 

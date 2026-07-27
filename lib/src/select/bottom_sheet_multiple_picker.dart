@@ -83,6 +83,17 @@ class BottomSheetMultiplePicker<T> {
     return this;
   }
 
+  /// Enables a filter menu when search is also enabled.
+  ///
+  /// Use [PickerFilter.local] for in-memory filtering and
+  /// [PickerFilter.remote] for lazy loading request parameters. Selected values
+  /// are preserved when the filter changes.
+  BottomSheetMultiplePicker<T> withFilterSupported<F>(
+      PickerFilter<T, F> filter) {
+    _picker.withFilterSupported(filter);
+    return this;
+  }
+
   /// Makes the whole row tappable and optionally provides a custom row builder.
   BottomSheetMultiplePicker<T> fullRow({ItemBuilder<T>? itemBuilder}) {
     _picker.fullRow(itemBuilder: itemBuilder);

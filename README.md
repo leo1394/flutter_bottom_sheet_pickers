@@ -14,6 +14,7 @@ Use it for form fields, filters, region pickers, store pickers, organization tre
 
 - Single and multiple bottom sheet pickers
 - Searchable local option lists
+- Optional local and remote filters for searchable select pickers
 - Paged lazy loading for remote option lists
 - Single and multiple cascade pickers with up to three levels
 - Cascade options from `CascadeOption`, map-like lists, or adjacency maps
@@ -23,6 +24,7 @@ Use it for form fields, filters, region pickers, store pickers, organization tre
 - Calendar helper labels for Gregorian, lunar, Buddhist, Tibetan, Islamic, Yi, and Hebrew calendars
 - Month and year shortcut navigation that automatically respects the allowed date range
 - Built-in cancel, reset, and confirm actions
+- Selected-count text for filtered multiple selection
 - Configurable primary color and action button border radius
 - Built-in labels for English, simplified Chinese, traditional Chinese, Thai, Burmese, Brazilian Portuguese, Canadian French, Italian, and Spanish
 
@@ -45,7 +47,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_bottom_sheet_pickers: ^0.1.1
+  flutter_bottom_sheet_pickers: ^0.1.4
 ```
 
 Import it:
@@ -60,6 +62,7 @@ import 'package:flutter_bottom_sheet_pickers/flutter_bottom_sheet_pickers.dart';
 | --- | --- | --- |
 | `BottomSheetPickers.single<T>(context)` | Single selection, searchable single selection, lazy single selection | `Future<T?>` |
 | `BottomSheetPickers.multiple<T>(context)` | Multiple selection, searchable multiple selection, lazy multiple selection | `Future<List<T>?>` |
+| `.withFilterSupported(...)` | Optional local or remote filter menu for searchable select pickers | chainable builder |
 | `BottomSheetPickers.cascade(context)` | Up to three-level cascade single selection | `Future<CascadeSelection?>` |
 | `BottomSheetPickers.cascade(context).multiple()` | Up to three-level cascade multiple selection | `Future<List<CascadeSelection>?>` |
 | `BottomSheetPickers.calendar(context)` | Date selection | `Future<DateTime?>` |
@@ -159,6 +162,62 @@ final String? selected = await BottomSheetPickers.single<String>(
 ```
 
 The lazy loader receives `page_index`, `page_size`, and `keyword` in the parameter map and should return the current page as `List<T>`. When search is enabled, `keyword` contains the active search text.
+
+### Search with Local Filter
+
+```dart
+final List<String>? selected = await BottomSheetPickers.multiple<String>(
+  context,
+  title: "Choose stores",
+).options(["PVS Store", "FS Store", "KIOSK Store"])
+    .searchSupported(placeholder: "Search store")
+    .withFilterSupported(
+      PickerFilter<String, String>.local(
+        options: const [
+          PickerFilterOption(value: null, label: "All"),
+          PickerFilterOption(value: "PVS", label: "PVS"),
+          PickerFilterOption(value: "FS", label: "FS"),
+          PickerFilterOption(value: "KIOSK", label: "KIOSK"),
+        ],
+        predicate: (option, filter) =>
+            filter == null || option.startsWith(filter),
+      ),
+    )
+    .show();
+```
+
+Local filters are applied to the loaded in-memory options. In multiple selection, selected values are preserved when users switch filters, and the picker shows the selected count so cross-filter selections remain visible.
+
+### Lazy Loading with Remote Filter
+
+```dart
+final String? selected = await BottomSheetPickers.single<String>(
+  context,
+  title: "Choose a store",
+).searchSupported(placeholder: "Search store")
+    .withFilterSupported(
+      PickerFilter<String, int>.remote(
+        options: const [
+          PickerFilterOption(value: null, label: "All"),
+          PickerFilterOption(value: 1, label: "PVS"),
+          PickerFilterOption(value: 2, label: "FS"),
+          PickerFilterOption(value: 3, label: "KIOSK"),
+        ],
+        parameterBuilder: (value) =>
+            value == null ? {} : {"store_type": value},
+      ),
+    )
+    .lazyLoad(
+      lazyRequestFuture: (params) async {
+        final storeType = params["store_type"] as int?;
+        final keyword = params["keyword"] as String?;
+        return loadStores(storeType: storeType, keyword: keyword);
+      },
+    )
+    .show();
+```
+
+Remote filters are merged into the lazy loading parameter map. Use `null` for an "All" option and return an empty parameter map when no filter should be sent.
 
 ### Cascade Picker
 
@@ -387,11 +446,12 @@ BottomSheetPickers.setLocalizations(
     cancel: context.i18n("cancel"),
     reset: context.i18n("reset"),
     confirm: context.i18n("confirm"),
+    selectedCount: context.i18n("selected_count"),
   ),
 );
 ```
 
-Unset labels fall back to the built-in labels for the active locale.
+Use `{count}` in `selectedCount`, for example `Selected {count}`. Unset labels fall back to the built-in labels for the active locale.
 
 Use `BottomPickerConfig` when only one subtree needs a local override:
 
